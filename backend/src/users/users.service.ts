@@ -9,6 +9,9 @@ import Role from 'src/common/enums/role.enum';
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
+  findByEmail(email: string) {
+    return this.userRepo.findOne({ where: { email } });
+  }
 
   async create(dto: CreateUserDto) {
     const password = await bcrypt.hash(dto.password, 10);
@@ -16,8 +19,8 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  findByEmail(email: string) {
-    return this.userRepo.findOne({ where: { email } });
+  async getAllUsers(): Promise<User[]> {
+    return this.userRepo.find();
   }
 
   async updateRole(id: string, role: Role): Promise<User> {
