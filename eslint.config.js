@@ -15,6 +15,7 @@ export default [
       'prettier/prettier': 'off',
       'no-console': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'off',
     },
     files: ['**/*.ts', '**/*.tsx'],
     ignores: ['**/dist/**/*', '**/node_modules/**/*'],
