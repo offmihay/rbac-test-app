@@ -2,43 +2,36 @@ import { Button, Form, Input } from 'antd';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuthApi } from '../../api/auth';
 import Paragraph from 'antd/es/typography/Paragraph';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../store/auth';
 
 const schema = z.object({
   email: z.email(),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
-    .max(32, 'Password must be at most 32 characters')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+    .max(32, 'Password must be at most 32 characters'),
 });
 
-type FormValues = z.infer<typeof schema>;
+export type SignInFormValues = z.infer<typeof schema>;
 
-const SignInForm = () => {
+type Props = {
+  onSubmit: (data: SignInFormValues) => void;
+  isLoading: boolean;
+};
+
+const SignInForm: React.FC<Props> = ({ onSubmit: onSubmitData, isLoading }) => {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
   const {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm<SignInFormValues>({
     resolver: zodResolver(schema),
   });
-  const { signIn } = useAuthApi();
 
-  const onSubmit = (data: FormValues) => {
-    signIn.mutate(data, {
-      onSuccess: (data) => {
-        login(data.access_token, { email: data.email, role: data.role, userId: data.sub });
-        navigate('/');
-      },
-    });
+  const onSubmit = (data: SignInFormValues) => {
+    onSubmitData(data);
   };
 
   return (
@@ -58,8 +51,8 @@ const SignInForm = () => {
           </button>
         </Paragraph>
         <Form.Item>
-          <Button htmlType="submit" type="primary" block loading={signIn.isPending}>
-            Sign in
+          <Button htmlType="submit" type="primary" block loading={isLoading}>
+            Sign In
           </Button>
         </Form.Item>
       </Form>

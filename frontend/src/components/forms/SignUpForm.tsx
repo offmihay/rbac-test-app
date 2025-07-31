@@ -2,38 +2,40 @@ import { Button, Form, Input } from 'antd';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuthApi } from '../../api/auth';
 import Paragraph from 'antd/es/typography/Paragraph';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../store/auth';
 
 const schema = z.object({
   email: z.email(),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(32, 'Password must be at most 32 characters')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
   fullName: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof schema>;
+export type SignUpFormValues = z.infer<typeof schema>;
 
-const SignUpForm = () => {
+type Props = {
+  onSubmit: (data: SignUpFormValues) => void;
+  isLoading: boolean;
+};
+
+const SignUpForm: React.FC<Props> = ({ onSubmit: onSubmitData, isLoading }) => {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
   const {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm<SignUpFormValues>({
     resolver: zodResolver(schema),
   });
-  const { signUp } = useAuthApi();
 
-  const onSubmit = (data: FormValues) => {
-    signUp.mutate(data, {
-      onSuccess: (data) => {
-        login(data.access_token, { email: data.email, role: data.role, userId: data.sub });
-        navigate('/');
-      },
-    });
+  const onSubmit = (data: SignUpFormValues) => {
+    onSubmitData(data);
   };
 
   return (
@@ -53,12 +55,12 @@ const SignUpForm = () => {
         <Paragraph>
           Don't have an account?{' '}
           <button onClick={() => navigate('/signin')}>
-            <span className="text-blue-500 cursor-pointer">Sign Up</span>
+            <span className="text-blue-500 cursor-pointer">Sign In</span>
           </button>
         </Paragraph>
         <Form.Item>
-          <Button htmlType="submit" type="primary" block loading={signUp.isPending}>
-            Sign up
+          <Button htmlType="submit" type="primary" block loading={isLoading}>
+            Sign Up
           </Button>
         </Form.Item>
       </Form>

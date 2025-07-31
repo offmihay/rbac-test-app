@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/auth';
 
 export default function FallbackRedirect() {
   const token = useAuthStore((state) => state.token);
+  localStorage.removeItem('path');
 
-  return <Navigate to={token ? '/' : '/signin'} replace />;
+  return <Navigate to={token ? '/dashboard' : '/signin'} replace />;
 }

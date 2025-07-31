@@ -42,6 +42,13 @@ export class CardsService {
     return this.cardsRepo.find({ where: { isDeleted: false, isApproved: true } });
   }
 
+  async findAwaiting(user: JwtUser): Promise<Card[]> {
+    if (user.role === Role.PUBLISHER) {
+      return this.cardsRepo.find({ where: { isDeleted: false, isApproved: false, publisherId: user.userId } });
+    }
+    return this.cardsRepo.find({ where: { isDeleted: false, isApproved: false } });
+  }
+
   async findAll(user: JwtUser): Promise<Card[]> {
     if (user.role === Role.ADMIN) {
       return this.cardsRepo.find({ where: { isDeleted: false } });

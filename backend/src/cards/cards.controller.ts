@@ -34,22 +34,29 @@ export class CardsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get()
+  @Roles(Role.PUBLISHER)
+  findAll(@Req() req: RequestWithUser) {
+    return this.cardsService.findAll(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('active')
   findActive() {
     return this.cardsService.findActive();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.PUBLISHER)
+  @Get('awaiting')
+  findAwaiting(@Req() req: RequestWithUser) {
+    return this.cardsService.findAwaiting(req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.cardsService.findOne(id);
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get()
-  @Roles(Role.PUBLISHER)
-  findAll(@Req() req: RequestWithUser) {
-    return this.cardsService.findAll(req.user);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

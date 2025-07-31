@@ -2,27 +2,24 @@ import Title from 'antd/es/typography/Title';
 import { useCardsApi, type CardEntity } from '../api/cards';
 import CardItem from '../components/ui/CardItem';
 import { useAuthStore } from '../store/auth';
-import { FloatButton, Modal, notification } from 'antd';
-import EditCardForm, { type CardFormValues } from '../components/forms/EditCardForm';
-import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
+import { Modal, notification } from 'antd';
+import EditCardForm, { type CardFormValues } from '../components/forms/EditCardForm';
 
 type ModalFormState = {
   opened: boolean;
   defaultData: CardEntity | null;
 };
 
-const DashboardPage = () => {
-  const { getActiveCards, deleteCard, createCard, updateCard } = useCardsApi();
-  const { data } = getActiveCards();
+const ApprovalPage = () => {
+  const { getAwaitingCards, updateCard, deleteCard, approveCard } = useCardsApi();
+  const { data } = getAwaitingCards();
   const user = useAuthStore((state) => state.user);
 
   const [modalFormState, setModalFormState] = useState<ModalFormState>({
     opened: false,
     defaultData: null,
   });
-
-  const handleOnLike = (id: string) => {};
 
   const handleOnDelete = (id: string) => {
     Modal.confirm({
@@ -48,33 +45,42 @@ const DashboardPage = () => {
     });
   };
 
-  const handleOnCreate = (data: CardFormValues) => {
-    createCard.mutate(data, {
-      onSuccess: () => {
-        setModalFormState({ opened: false, defaultData: null });
-        notification.success({ placement: 'topRight', message: 'Card successfully added' });
+  const handleOnApprove = (id?: string, data?: CardFormValues) => {
+    Modal.confirm({
+      title: 'Confirm',
+      content: 'Are you sure you want to approve this card?',
+      footer: (_, { OkBtn, CancelBtn }) => (
+        <>
+          <CancelBtn />
+          <OkBtn />
+        </>
+      ),
+      onOk: () => {
+        if (data && data.id) {
+          const { id, ...needData } = data;
+          updateCard.mutate({ data: needData, id: data.id });
+        }
+        if (id) {
+          approveCard.mutate(
+            { id, isApproved: true },
+            {
+              onSuccess: () => {
+                setModalFormState({ opened: false, defaultData: null });
+                notification.success({ placement: 'topRight', message: 'Card successfully approved' });
+              },
+            },
+          );
+        }
       },
+      centered: true,
     });
   };
-  const handleOnUpdate = (data: CardFormValues) => {
-    if (data.id) {
-      const { id, ...needData } = data;
-      updateCard.mutate(
-        { data: needData, id: data.id },
-        {
-          onSuccess: () => {
-            setModalFormState({ opened: false, defaultData: null });
-            notification.success({ placement: 'topRight', message: 'Card successfully updated' });
-          },
-        },
-      );
-    }
-  };
+
   return (
     <>
       <div className="m-4">
         <Title className="text-center" level={2}>
-          Dashboard
+          Awaiting for approval
         </Title>
         <div className="flex flex-row flex-wrap gap-6 justify-center">
           {data?.map((item) => {
@@ -82,28 +88,17 @@ const DashboardPage = () => {
               <CardItem
                 data={item}
                 key={item.id}
-                availableActions={
-                  item.publisher.id === user?.userId || user?.role === 'admin' ? ['like', 'edit', 'delete'] : ['like']
-                }
-                onLike={handleOnLike}
+                availableActions={user?.role === 'admin' ? ['edit', 'delete', 'approve'] : ['delete']}
                 onDelete={handleOnDelete}
                 onEdit={handleOnEdit}
+                onApprove={handleOnApprove}
               />
             );
           })}
         </div>
       </div>
-      {user?.role !== 'visitor' && (
-        <FloatButton
-          shape="circle"
-          type="primary"
-          style={{ insetInlineEnd: 94 }}
-          icon={<PlusOutlined />}
-          onClick={() => setModalFormState({ defaultData: null, opened: true })}
-        />
-      )}
       <Modal
-        title={modalFormState.defaultData ? 'Edit card' : 'Create Card'}
+        title="Approve Card"
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={modalFormState.opened}
         onCancel={() => setModalFormState({ defaultData: null, opened: false })}
@@ -113,8 +108,8 @@ const DashboardPage = () => {
         <div className="mt-4">
           <EditCardForm
             key={modalFormState.defaultData?.id ?? 'create'}
-            isLoading={createCard.isPending || updateCard.isPending}
-            onSubmit={modalFormState.defaultData ? handleOnUpdate : handleOnCreate}
+            isLoading={updateCard.isPending}
+            onSubmit={(data) => handleOnApprove(data.id, data)}
             defaultData={modalFormState.defaultData}
           />
         </div>
@@ -123,4 +118,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default ApprovalPage;
