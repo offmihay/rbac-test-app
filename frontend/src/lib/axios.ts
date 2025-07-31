@@ -14,4 +14,16 @@ instance.interceptors.request.use((config) => {
   return config;
 });
 
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const msg = error?.response?.data?.message || error.message || 'Unexpected error';
+    const normalized = Array.isArray(msg) ? msg.join(', ') : msg;
+
+    alert(normalized);
+
+    return Promise.reject(error);
+  },
+);
+
 export default instance;

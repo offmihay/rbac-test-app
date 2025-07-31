@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-export type UserRole = 'admin' | 'publisher';
+export type UserRole = 'admin' | 'publisher' | 'visitor';
 
 interface AuthUser {
   userId: string;
@@ -15,9 +16,17 @@ interface AuthState {
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  token: null,
-  user: null,
-  login: (token, user) => set({ token, user }),
-  logout: () => set({ token: null, user: null }),
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      token: null,
+      user: null,
+      login: (token, user) => set({ token, user }),
+      logout: () => set({ token: null, user: null }),
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({ token: state.token, user: state.user }),
+    },
+  ),
+);
