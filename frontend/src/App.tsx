@@ -1,10 +1,10 @@
-import { Button } from 'antd';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function App() {
+  const queryClient = new QueryClient();
   return (
     <>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
-      <Button type="primary">Primary Button</Button>
+      <QueryClientProvider client={queryClient}></QueryClientProvider>
     </>
   );
 }
