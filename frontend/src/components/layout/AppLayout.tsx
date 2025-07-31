@@ -22,7 +22,7 @@ const AppLayout = () => {
   const allTabs: ItemType<MenuItemType>[] = [
     { key: '/dashboard', label: 'Dashboard', onClick: () => navigateTo('/dashboard') },
     { key: '/approval', label: 'Awaiting for Approval', onClick: () => navigateTo('/approval') },
-    { key: '/users', label: 'Users', onClick: () => navigateTo('/users') },
+    { key: '/users', label: 'Users Management', onClick: () => navigateTo('/users') },
   ];
 
   const accessibleTabs = allTabs.filter((tab) => {

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from '../lib/axios';
 import { type UserRole } from '../store/auth';
 
@@ -16,6 +16,7 @@ type UpdateUserRolePayload = {
 };
 
 export const useUserApi = () => {
+  const queryClient = useQueryClient();
   const getUsers = () =>
     useQuery<UserEntity[]>({
       queryKey: ['users'],
@@ -30,6 +31,7 @@ export const useUserApi = () => {
       const res = await axios.patch<UserEntity>(`/users/${id}/role`, { role });
       return res.data;
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 
   return {

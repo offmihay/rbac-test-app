@@ -1,6 +1,6 @@
 import { Exclude } from 'class-transformer';
 import Role from 'src/common/enums/role.enum';
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -22,4 +22,7 @@ export class User {
 
   @Column({ type: 'enum', enum: Role, default: Role.VISITOR })
   role: Role;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }
