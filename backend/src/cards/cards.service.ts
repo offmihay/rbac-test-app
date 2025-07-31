@@ -6,10 +6,14 @@ import { Card } from './entities/card.entity';
 import { Repository } from 'typeorm';
 import { JwtUser } from 'src/common/types/jwt-user.type';
 import { Role } from 'src/common/enums/role.enum';
+import { CardLike } from './entities/card-like.entity';
 
 @Injectable()
 export class CardsService {
-  constructor(@InjectRepository(Card) private cardsRepo: Repository<Card>) {}
+  constructor(
+    @InjectRepository(Card) private cardsRepo: Repository<Card>,
+    @InjectRepository(CardLike) private cardLikesRepo: Repository<CardLike>,
+  ) {}
   private async findById(id: string): Promise<Card | null> {
     return this.cardsRepo.findOne({ where: { id, isDeleted: false } });
   }
@@ -38,23 +42,42 @@ export class CardsService {
     return this.cardsRepo.save(card);
   }
 
-  async findActive(): Promise<Card[]> {
-    return this.cardsRepo.find({ where: { isDeleted: false, isApproved: true } });
+  async findActive(user: JwtUser): Promise<Omit<Card, 'likes'>[]> {
+    const cards = await this.cardsRepo.find({
+      where: { isDeleted: false, isApproved: true },
+      order: { createdAt: 'DESC' },
+      relations: ['likes'],
+    });
+    const newCards = cards.map((card) => {
+      const { likes, ...rest } = card;
+      return { ...rest, isLiked: !!likes.find((like) => like.userId === user.userId), likeCount: likes.length };
+    });
+
+    return newCards;
   }
 
   async findAwaiting(user: JwtUser): Promise<Card[]> {
     if (user.role === Role.PUBLISHER) {
-      return this.cardsRepo.find({ where: { isDeleted: false, isApproved: false, publisherId: user.userId } });
+      return await this.cardsRepo.find({
+        where: { isDeleted: false, isApproved: false, publisherId: user.userId },
+        order: { createdAt: 'DESC' },
+      });
     }
-    return this.cardsRepo.find({ where: { isDeleted: false, isApproved: false } });
+    return await this.cardsRepo.find({ where: { isDeleted: false, isApproved: false }, order: { createdAt: 'DESC' } });
   }
 
-  async findAll(user: JwtUser): Promise<Card[]> {
-    if (user.role === Role.ADMIN) {
-      return this.cardsRepo.find({ where: { isDeleted: false } });
-    }
+  async findUsersCards(user: JwtUser): Promise<Omit<Card, 'likes'>[]> {
+    const cards = await this.cardsRepo.find({
+      where: { isDeleted: false, publisherId: user.userId },
+      order: { createdAt: 'DESC' },
+      relations: ['likes'],
+    });
 
-    return this.cardsRepo.find({ where: { isDeleted: false, publisherId: user.userId } });
+    const newCards = cards.map((card) => {
+      const { likes, ...rest } = card;
+      return { ...rest, isLiked: !!likes.find((like) => like.userId === user.userId), likeCount: likes.length };
+    });
+    return newCards;
   }
 
   async update(id: string, updateCardDto: UpdateCardDto, user: JwtUser): Promise<Card> {
@@ -75,5 +98,25 @@ export class CardsService {
     }
     card.isApproved = isApproved;
     return this.cardsRepo.save(card);
+  }
+
+  async toggleLike(id: string, user: JwtUser): Promise<{ message: string }> {
+    const card = await this.findById(id);
+    if (!card) {
+      throw new NotFoundException('Card not found');
+    }
+    const existingLike = await this.cardLikesRepo.findOne({
+      where: {
+        cardId: id,
+        userId: user.userId,
+      },
+    });
+    if (existingLike) {
+      await this.cardLikesRepo.delete(existingLike.id);
+    } else {
+      const like = this.cardLikesRepo.create({ cardId: card.id, userId: user.userId });
+      await this.cardLikesRepo.save(like);
+    }
+    return { message: 'Like successfully toggled' };
   }
 }

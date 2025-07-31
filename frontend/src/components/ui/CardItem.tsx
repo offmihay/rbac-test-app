@@ -14,17 +14,36 @@ type Props = {
 
 const CardItem: React.FC<Props> = ({ data, onDelete, onEdit, onLike, onApprove, availableActions }) => {
   const availableActionsObj = {
-    like: <LikeFilled key="like" onClick={() => onLike?.(data.id)} />,
-    edit: <EditOutlined key="edit" onClick={() => onEdit?.(data)} />,
-    delete: <DeleteOutlined key="delete" onClick={() => onDelete?.(data.id)} />,
-    approve: <CheckOutlined key="approve" onClick={() => onApprove?.(data.id)} />,
+    like: (
+      <p onClick={() => onLike?.(data.id)}>
+        <span className="mr-1.5">
+          <LikeFilled key="like" style={data.isLiked ? { color: '#1890ff' } : undefined} />
+        </span>
+        {!!data.likeCount && <span>{data.likeCount}</span>}
+      </p>
+    ),
+    edit: (
+      <p>
+        <EditOutlined key="edit" onClick={() => onEdit?.(data)} />
+      </p>
+    ),
+    delete: (
+      <p>
+        <DeleteOutlined key="delete" onClick={() => onDelete?.(data.id)} />
+      </p>
+    ),
+    approve: (
+      <p>
+        <CheckOutlined key="approve" onClick={() => onApprove?.(data.id)} />
+      </p>
+    ),
   };
   const actions: React.ReactNode[] = availableActions.map((action) => availableActionsObj[action]);
 
   return (
     <Card
       actions={actions}
-      style={{ maxWidth: 300 }}
+      style={{ width: 300 }}
       cover={
         <div style={{ height: 300, overflow: 'hidden' }}>
           <img alt="example" src={data.imageUrl || ''} className="w-full h-full object-cover" />

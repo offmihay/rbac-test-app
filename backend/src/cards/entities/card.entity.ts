@@ -1,5 +1,6 @@
 import { User } from 'src/users/entities/users.entity';
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { CardLike } from './card-like.entity';
 
 export enum CardCategory {
   Birthday = 'birthday_greeting',
@@ -33,6 +34,9 @@ export class Card {
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'publisherId' })
   publisher: User;
+
+  @OneToMany(() => CardLike, (like) => like.card, { cascade: true })
+  likes: CardLike[];
 
   @Column()
   publisherId: string;

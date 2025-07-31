@@ -36,14 +36,14 @@ export class CardsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   @Roles(Role.PUBLISHER)
-  findAll(@Req() req: RequestWithUser) {
-    return this.cardsService.findAll(req.user);
+  findUsersCards(@Req() req: RequestWithUser) {
+    return this.cardsService.findUsersCards(req.user);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('active')
-  findActive() {
-    return this.cardsService.findActive();
+  findActive(@Req() req: RequestWithUser) {
+    return this.cardsService.findActive(req.user);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -76,8 +76,14 @@ export class CardsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Patch(':id/approve')
-  async approveCard(@Param('id') id: string, @Query('isApproved') isApproved: string) {
+  approveCard(@Param('id') id: string, @Query('isApproved') isApproved: string) {
     const value = isApproved === 'true';
     return this.cardsService.approve(id, value);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/like')
+  leaveLike(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.cardsService.toggleLike(id, req.user);
   }
 }

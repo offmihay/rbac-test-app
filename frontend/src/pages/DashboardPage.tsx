@@ -2,7 +2,7 @@ import Title from 'antd/es/typography/Title';
 import { useCardsApi, type CardEntity } from '../api/cards';
 import CardItem from '../components/ui/CardItem';
 import { useAuthStore } from '../store/auth';
-import { FloatButton, Modal, notification } from 'antd';
+import { FloatButton, Modal, notification, Switch } from 'antd';
 import EditCardForm, { type CardFormValues } from '../components/forms/EditCardForm';
 import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
@@ -13,8 +13,11 @@ type ModalFormState = {
 };
 
 const DashboardPage = () => {
-  const { getActiveCards, deleteCard, createCard, updateCard } = useCardsApi();
-  const { data } = getActiveCards();
+  const { getActiveCards, deleteCard, createCard, updateCard, toggleLike, getUsersCards } = useCardsApi();
+  const [dispayOnlyMine, setDisplayOnlyMine] = useState(false);
+
+  const { data: activeCardsData } = getActiveCards(!dispayOnlyMine);
+  const { data: usersCardsData } = getUsersCards(dispayOnlyMine);
   const user = useAuthStore((state) => state.user);
 
   const [modalFormState, setModalFormState] = useState<ModalFormState>({
@@ -22,7 +25,9 @@ const DashboardPage = () => {
     defaultData: null,
   });
 
-  const handleOnLike = (id: string) => {};
+  const handleOnLike = (id: string) => {
+    toggleLike.mutate(id);
+  };
 
   const handleOnDelete = (id: string) => {
     Modal.confirm({
@@ -76,21 +81,44 @@ const DashboardPage = () => {
         <Title className="text-center" level={2}>
           Dashboard
         </Title>
-        <div className="flex flex-row flex-wrap gap-6 justify-center">
-          {data?.map((item) => {
-            return (
-              <CardItem
-                data={item}
-                key={item.id}
-                availableActions={
-                  item.publisher.id === user?.userId || user?.role === 'admin' ? ['like', 'edit', 'delete'] : ['like']
-                }
-                onLike={handleOnLike}
-                onDelete={handleOnDelete}
-                onEdit={handleOnEdit}
-              />
-            );
-          })}
+        <div className="flex flex-row justify-end gap-4 mr-10">
+          <p>Display only mine</p>
+          <Switch checked={dispayOnlyMine} onChange={(checked) => setDisplayOnlyMine(checked)} />
+        </div>
+        <div className="flex flex-row flex-wrap gap-6 justify-center mt-12">
+          {!dispayOnlyMine
+            ? activeCardsData?.map((item) => {
+                return (
+                  <CardItem
+                    data={item}
+                    key={item.id}
+                    availableActions={
+                      item.publisher.id === user?.userId || user?.role === 'admin'
+                        ? ['like', 'edit', 'delete']
+                        : ['like']
+                    }
+                    onLike={handleOnLike}
+                    onDelete={handleOnDelete}
+                    onEdit={handleOnEdit}
+                  />
+                );
+              })
+            : usersCardsData?.map((item) => {
+                return (
+                  <CardItem
+                    data={item}
+                    key={item.id}
+                    availableActions={
+                      item.publisher.id === user?.userId || user?.role === 'admin'
+                        ? ['like', 'edit', 'delete']
+                        : ['like']
+                    }
+                    onLike={handleOnLike}
+                    onDelete={handleOnDelete}
+                    onEdit={handleOnEdit}
+                  />
+                );
+              })}
         </div>
       </div>
       {user?.role !== 'visitor' && (

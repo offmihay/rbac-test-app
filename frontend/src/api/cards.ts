@@ -13,6 +13,8 @@ export type CardEntity = {
   isDeleted: boolean;
   createdAt: string;
   publisher: UserEntity;
+  isLiked?: boolean;
+  likeCount?: number;
 };
 
 type CreateCardPayload = {
@@ -35,13 +37,14 @@ export const useCardsApi = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cards'] }),
   });
 
-  const getActiveCards = () =>
+  const getActiveCards = (enabled: boolean) =>
     useQuery({
       queryKey: ['cards', 'active'],
       queryFn: async (): Promise<CardEntity[]> => {
         const res = await axios.get('/cards/active');
         return res.data;
       },
+      enabled,
     });
 
   const getAwaitingCards = () =>
@@ -53,13 +56,14 @@ export const useCardsApi = () => {
       },
     });
 
-  const getAllCards = () =>
+  const getUsersCards = (enabled: boolean) =>
     useQuery({
       queryKey: ['cards'],
       queryFn: async (): Promise<CardEntity[]> => {
         const res = await axios.get('/cards');
         return res.data;
       },
+      enabled: enabled,
     });
 
   const getCardById = (id: string) =>
@@ -97,14 +101,23 @@ export const useCardsApi = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cards'] }),
   });
 
+  const toggleLike = useMutation({
+    mutationFn: async (id: string): Promise<CardEntity> => {
+      const res = await axios.patch(`/cards/${id}/like`);
+      return res.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cards'] }),
+  });
+
   return {
     createCard,
     getActiveCards,
     getAwaitingCards,
-    getAllCards,
+    getUsersCards,
     getCardById,
     updateCard,
     deleteCard,
     approveCard,
+    toggleLike,
   };
 };

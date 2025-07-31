@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
+import { CardLike } from 'src/cards/entities/card-like.entity';
 import Role from 'src/common/enums/role.enum';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -25,4 +26,7 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => CardLike, (like) => like.user)
+  likes: CardLike[];
 }

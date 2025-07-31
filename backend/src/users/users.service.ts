@@ -20,7 +20,7 @@ export class UsersService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    return this.userRepo.find({ order: { createdAt: 'ASC' } });
+    return this.userRepo.find({ order: { createdAt: 'DESC' } });
   }
 
   async updateRole(id: string, role: Role): Promise<User> {

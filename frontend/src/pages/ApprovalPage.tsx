@@ -82,7 +82,7 @@ const ApprovalPage = () => {
         <Title className="text-center" level={2}>
           Awaiting for approval
         </Title>
-        <div className="flex flex-row flex-wrap gap-6 justify-center">
+        <div className="flex flex-row flex-wrap gap-6 justify-center mt-8">
           {data?.map((item) => {
             return (
               <CardItem
