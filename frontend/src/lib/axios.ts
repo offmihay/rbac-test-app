@@ -22,7 +22,7 @@ instance.interceptors.response.use(
     const method = error?.config?.method?.toLowerCase();
     const isMutationMethod = ['post', 'put', 'patch', 'delete'].includes(method);
 
-    if (status === 401) {
+    if (status === 401 && !error?.response?.data.message) {
       useAuthStore.getState().logout();
       notification.info({ placement: 'topRight', message: 'Your session is expired. Please try sign in again' });
     }

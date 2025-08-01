@@ -25,6 +25,8 @@ const UsersPage = () => {
         <Title className="text-center" level={2}>
           Users Management (make publisher)
         </Title>
+        <p className="text-center">This list doesn't include admins</p>
+
         <div className="flex flex-col gap-2 items-center mt-8">
           {data?.map((user) => (
             <Card style={{ maxWidth: '700px', width: '100%' }}>
