@@ -54,7 +54,7 @@ const SignUpForm: React.FC<Props> = ({ onSubmit: onSubmitData, isLoading }) => {
         </Form.Item>
         <Paragraph>
           Don't have an account?{' '}
-          <button onClick={() => navigate('/signin')}>
+          <button type="button" onClick={() => navigate('/signin')}>
             <span className="text-blue-500 cursor-pointer">Sign In</span>
           </button>
         </Paragraph>
