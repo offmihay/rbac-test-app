@@ -97,6 +97,29 @@ pnpm run dev
 
 ---
 
+## 📚 API Documentation
+
+### Swagger UI
+
+After starting the backend, open:
+
+- [http://localhost:3000/api](http://localhost:3000/api)
+
+### Postman Collection
+
+You can import the OpenAPI schema into Postman from:
+
+- [http://localhost:3000/api-json](http://localhost:3000/api-json)
+
+In Postman:
+
+1. Click **"Import"**
+2. Choose **"Link"** or **"Raw text"**
+3. Paste the URL above
+4. Confirm the import
+
+---
+
 ## 📝 Notes
 
 - `ADMIN_PASSWORD` must be at least **8 characters** or the admin creation migration may fail silently.
